@@ -4,8 +4,7 @@ import com.example.JV_Exhibition_Curation.model.Artwork;
 
 import java.util.List;
 
-public interface ArtExhibitService {
+public interface ApiService {
+
     List<Artwork> getAllHomeArtworks(Integer page);
-
-
 }
