@@ -2,6 +2,7 @@ package com.example.JV_Exhibition_Curation.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
@@ -12,12 +13,10 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 @Builder
 @Table(name = "artwork", uniqueConstraints = {@UniqueConstraint(columnNames = {"apiId", "apiOrigin"})})
-
 public class Artwork {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     Long id;
     @NotNull(message = "Api Id cannot be null")
     @Range(min = 0, message = "Api Id must be 0 or above")
@@ -25,6 +24,7 @@ public class Artwork {
     @NotNull(message = "Title cannot be null")
     String title;
     @NotNull(message = "Description cannot be null")
+    @Lob
     String description;
     @NotNull(message = "Alt Text cannot be null")
     String altText;
