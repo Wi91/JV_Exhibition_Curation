@@ -2,6 +2,7 @@ package com.example.JV_Exhibition_Curation.service;
 
 import com.example.JV_Exhibition_Curation.dto.SavedArtworksDTO;
 import com.example.JV_Exhibition_Curation.model.Artwork;
+import com.example.JV_Exhibition_Curation.model.Exhibition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
         if(page == null || page < 1){
             //Add exception
         }
-        return List.of();
+        return apiService.getArtworkSearchResult(query, page);
     }
 
     @Override
@@ -37,6 +38,25 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
 
     @Override
     public void removeArtworkFromExhibition(Long exhibitionId, SavedArtworksDTO savedArtworksDTO) {
+    }
 
+    @Override
+    public Exhibition createNewExhibition() {
+        return null;
+    }
+
+    @Override
+    public void deleteExhibition(Long exhibitionId) {
+
+    }
+
+    @Override
+    public List<Exhibition> getAllExhibitions() {
+        return List.of();
+    }
+
+    @Override
+    public Exhibition getExhibition(Long exhibitionId) {
+        return null;
     }
 }
