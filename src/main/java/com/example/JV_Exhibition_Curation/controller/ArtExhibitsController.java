@@ -30,17 +30,18 @@ public class ArtExhibitsController {
         return new ResponseEntity<>(artExhibitService.getSearchResults(query, page), HttpStatus.OK);
     }
 
+    //Get artwork details from API
+
     //Add Artwork To Exhibition
-    @PostMapping("/exhibitions/{exhibitionId}")
-    public ResponseEntity<List<Artwork>> addArtworkToExhibition (@RequestBody @Valid SavedArtworksDTO savedArtworksDTO, @PathVariable Long exhibitionId){
-        return new ResponseEntity<>(artExhibitService.addArtworkToExhibition(savedArtworksDTO, exhibitionId));
+    @PostMapping("/exhibitions/{exhibitionId}/artworks")
+    public ResponseEntity<Exhibition> addArtworkToExhibition (@RequestBody @Valid SavedArtworksDTO savedArtworksDTO, @PathVariable Long exhibitionId){
+        return new ResponseEntity<>(artExhibitService.addArtworkToExhibition(savedArtworksDTO, exhibitionId), HttpStatus.OK);
     }
 
     //Delete Artwork From Exhibition
-    @DeleteMapping("/exhibitions/{exhibitionId}/{artworkId}")
-    public ResponseEntity<Artwork> removeArtworkFromExhibition (@PathVariable Long exhibitionId, @RequestBody @Valid SavedArtworksDTO savedArtworksDTO){
-        artExhibitService.removeArtworkFromExhibition(exhibitionId, savedArtworksDTO);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @DeleteMapping("/exhibitions/{exhibitionId}/artworks")
+    public ResponseEntity<Exhibition> removeArtworkFromExhibition (@PathVariable Long exhibitionId, @RequestBody @Valid SavedArtworksDTO savedArtworksDTO){
+        return new ResponseEntity<>(artExhibitService.removeArtworkFromExhibition(exhibitionId, savedArtworksDTO), HttpStatus.OK);
     }
 
     //Create Exhibition
@@ -50,7 +51,7 @@ public class ArtExhibitsController {
     }
 
     //Delete Exhibition
-    @DeleteMapping("/exhibitions/{id}")
+    @DeleteMapping("/exhibitions/{exhibitionId}")
     public ResponseEntity<Exhibition> deleteExhibition (@PathVariable Long exhibitionId){
         artExhibitService.deleteExhibition(exhibitionId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -62,7 +63,7 @@ public class ArtExhibitsController {
         return new ResponseEntity<>(artExhibitService.getAllExhibitions(), HttpStatus.OK);
     }
 
-    @GetMapping("/exhibitions/{id}")
+    @GetMapping("/exhibitions/{exhibitionId}")
     public ResponseEntity<Exhibition> getExhibition (@PathVariable Long exhibitionId) {
         return new ResponseEntity<>(artExhibitService.getExhibition(exhibitionId), HttpStatus.OK);
     }
