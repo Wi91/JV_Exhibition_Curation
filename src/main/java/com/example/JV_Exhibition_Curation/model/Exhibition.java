@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -22,7 +23,7 @@ public class Exhibition {
 
     @ManyToMany
     @JoinTable(name = "exhibition_artwork", joinColumns = {@JoinColumn(name = "exhibition_id")}, inverseJoinColumns = {@JoinColumn(name = "artwork_id")})
-   private ArrayList<Artwork> artList;
+   private List<Artwork> artList = new ArrayList<>();
 
 
 }
