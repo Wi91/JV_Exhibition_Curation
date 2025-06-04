@@ -3,7 +3,7 @@ package com.example.JV_Exhibition_Curation.service;
 import com.example.JV_Exhibition_Curation.dto.SavedArtworksDTO;
 import com.example.JV_Exhibition_Curation.model.Artwork;
 import com.example.JV_Exhibition_Curation.model.Exhibition;
-import com.example.JV_Exhibition_Curation.repository.ArtExhibitRepository;
+import com.example.JV_Exhibition_Curation.repository.ArtRepository;
 import com.example.JV_Exhibition_Curation.repository.ExhibitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -20,6 +20,8 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     ApiService apiService;
     @Autowired
     ExhibitionRepository exhibitionRepository;
+    @Autowired
+    ArtRepository artRepository;
 
     @Override
     public List<Artwork> getAllHomeArtworks(Integer page) {
@@ -38,12 +40,50 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     }
 
     @Override
-    public HttpStatusCode addArtworkToExhibition(SavedArtworksDTO savedArtworksDTO, Long exhibitionID) {
-        return null;
+    public Exhibition addArtworkToExhibition(SavedArtworksDTO savedArtworksDTO, Long exhibitionId) {
+        Optional<Exhibition> exhibitionOptional = exhibitionRepository.findById(exhibitionId);
+        if(exhibitionOptional.isEmpty()){
+            throw new RuntimeException("No exhibition");
+            //throw exception
+        }
+        Exhibition exhibition = exhibitionOptional.get();
+        Artwork artwork = apiService.getArtworkDetailsByApi(savedArtworksDTO);
+        if(!artRepository.existsByApiIdAndApiOrigin(artwork.getApiId(), artwork.getApiOrigin())){
+            artwork = artRepository.save(artwork);
+        } else {
+            artwork = artRepository.findByApiIdAndApiOrigin(artwork.getApiId(), artwork.getApiOrigin()).get();
+        }
+        if(exhibition.getArtList().contains(artwork)){
+            throw new RuntimeException("Exhibition already contains artwork");
+            //throw exception
+        } else {
+            ArrayList<Artwork> artworkArrayList = new ArrayList<>(exhibition.getArtList());
+           artworkArrayList.add(artwork);
+           exhibition.setArtList(artworkArrayList);
+        }
+        return exhibitionRepository.save(exhibition);
     }
 
     @Override
-    public void removeArtworkFromExhibition(Long exhibitionId, SavedArtworksDTO savedArtworksDTO) {
+    public Exhibition removeArtworkFromExhibition(Long exhibitionId, SavedArtworksDTO savedArtworksDTO) {
+        Optional<Exhibition> exhibitionOptional = exhibitionRepository.findById(exhibitionId);
+        if(exhibitionOptional.isEmpty()){
+            throw new RuntimeException("No exhibitions");
+            //throw exception
+        }
+        Exhibition exhibition = exhibitionOptional.get();
+        Optional<Artwork> optionalArtwork = artRepository.findByApiIdAndApiOrigin(savedArtworksDTO.getArtworkId(), savedArtworksDTO.getApiOrigin());
+        if(optionalArtwork.isEmpty()){
+            throw new RuntimeException("Artwork is empty");
+            //throw exception
+        }
+        Artwork artwork = optionalArtwork.get();
+        if(!exhibition.getArtList().contains(artwork)){
+            throw new RuntimeException("Artwork not in exhibition");
+            //throw exception
+        }
+        exhibition.getArtList().remove(artwork);
+        return exhibitionRepository.save(exhibition);
     }
 
     @Override

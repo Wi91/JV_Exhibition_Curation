@@ -14,9 +14,9 @@ public interface ArtExhibitService {
 
     List<Artwork> getSearchResults(String query, Integer page);
 
-    HttpStatusCode addArtworkToExhibition(@Valid SavedArtworksDTO savedArtworksDTO, Long exhibitionID);
+    Exhibition addArtworkToExhibition(@Valid SavedArtworksDTO savedArtworksDTO, Long exhibitionID);
 
-    void removeArtworkFromExhibition(Long exhibitionId, @Valid SavedArtworksDTO savedArtworksDTO);
+    Exhibition removeArtworkFromExhibition(Long exhibitionId, @Valid SavedArtworksDTO savedArtworksDTO);
 
     Exhibition createNewExhibition();
 
