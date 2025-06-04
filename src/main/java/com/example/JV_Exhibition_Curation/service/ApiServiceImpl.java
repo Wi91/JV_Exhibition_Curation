@@ -31,12 +31,42 @@ public class ApiServiceImpl implements ApiService{
         return list;
     }
 
+    @Override
+    public List<Artwork> getArtworkSearchResult(String query, Integer page) {
+        ArrayList<Artwork> chicagoArtworks = getChicagoSearchArtwork(query, page);
+        return chicagoArtworks;
+    }
+
+    private ArrayList<Artwork> getChicagoSearchArtwork(String query, Integer page) {
+        String url = String.format("https://api.artic.edu/api/v1/artworks/search?q=%s&page=%d&limit=10", query, page);
+        JsonNode results = sendGETRequest(url);
+        JsonNode data = results.findPath("data");
+        ArrayList<Artwork> searchResults = new ArrayList<>();
+
+        for(JsonNode node : data) {
+
+
+            Artwork art = Artwork.builder()
+                    .apiId(node.path("id").asLong(0))
+                    .title(node.path("title").asText("Unknown"))
+                    .altText(node.path("thumbnail").path("alt_text").asText("None Provided"))
+                    .apiOrigin("Chicago Institute")
+                    .artistName(node.path("artist_title").asText("Unknown"))
+                    .description(node.path("description").asText("No Description Provided"))
+                    .imageUrl(CHICAGO_IMAGE_BASE_URL + node.path("image_id").asText("No Image") + "/full/843,/0/default.jpg")
+                    .build();
+
+            searchResults.add(art);
+        }
+        return searchResults;
+    }
+
     private ArrayList<Artwork> getAllHomeChicagoArtworks(Integer page) {
 
         ArrayList<Artwork> chicagoArtworks = new ArrayList<>();
 
         String url = CHICAGO_ARTWORK_ALL_ARTWORKS_URL + page;
-        JsonNode results = SendGETRequest(url);
+        JsonNode results = sendGETRequest(url);
 
         JsonNode data = results.findPath("data");
         for(JsonNode node : data) {
@@ -58,7 +88,7 @@ public class ApiServiceImpl implements ApiService{
         return chicagoArtworks;
     }
 
-    private JsonNode SendGETRequest(String url) {
+    private JsonNode sendGETRequest(String url) {
 
         HttpRequest chiSearchRequest = HttpRequest.newBuilder()
                 .uri(URI.create(url))
