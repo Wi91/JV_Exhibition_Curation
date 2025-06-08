@@ -1,6 +1,10 @@
 package com.example.JV_Exhibition_Curation.service;
 
 import com.example.JV_Exhibition_Curation.dto.SavedArtworksDTO;
+import com.example.JV_Exhibition_Curation.exception.APIPageOutOfBoundsException;
+import com.example.JV_Exhibition_Curation.exception.DuplicatedArtworkException;
+import com.example.JV_Exhibition_Curation.exception.InvalidExhibitionException;
+import com.example.JV_Exhibition_Curation.exception.InvalidRequestException;
 import com.example.JV_Exhibition_Curation.model.Artwork;
 import com.example.JV_Exhibition_Curation.model.Exhibition;
 import com.example.JV_Exhibition_Curation.repository.ArtRepository;
@@ -26,7 +30,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     @Override
     public List<Artwork> getAllHomeArtworks(Integer page) {
         if(page == null || page < 1){
-            //Add exception
+          throw new APIPageOutOfBoundsException("Page must be greater or equal to 1");
         }
         return apiService.getAllHomeArtworks(page);
     }
@@ -34,7 +38,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     @Override
     public List<Artwork> getSearchResults(String query, Integer page) {
         if(page == null || page < 1){
-            //Add exception
+            throw new APIPageOutOfBoundsException("Page must be greater or equal to 1");
         }
         return apiService.getArtworkSearchResult(query, page);
     }
@@ -43,7 +47,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     public Exhibition addArtworkToExhibition(SavedArtworksDTO savedArtworksDTO, Long exhibitionId) {
         Optional<Exhibition> exhibitionOptional = exhibitionRepository.findById(exhibitionId);
         if(exhibitionOptional.isEmpty()){
-            throw new RuntimeException("No exhibition");
+            throw new InvalidExhibitionException("Exhibition does not exist");
             //throw exception
         }
         Exhibition exhibition = exhibitionOptional.get();
@@ -54,7 +58,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
             artwork = artRepository.findByApiIdAndApiOrigin(artwork.getApiId(), artwork.getApiOrigin()).get();
         }
         if(exhibition.getArtList().contains(artwork)){
-            throw new RuntimeException("Exhibition already contains artwork");
+            throw new DuplicatedArtworkException("Exhibition already contains artwork");
             //throw exception
         } else {
             ArrayList<Artwork> artworkArrayList = new ArrayList<>(exhibition.getArtList());
@@ -68,19 +72,19 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     public Exhibition removeArtworkFromExhibition(Long exhibitionId, SavedArtworksDTO savedArtworksDTO) {
         Optional<Exhibition> exhibitionOptional = exhibitionRepository.findById(exhibitionId);
         if(exhibitionOptional.isEmpty()){
-            throw new RuntimeException("No exhibitions");
+            throw new InvalidExhibitionException("No exhibitions");
             //throw exception
         }
         Exhibition exhibition = exhibitionOptional.get();
         Optional<Artwork> optionalArtwork = artRepository.findByApiIdAndApiOrigin(savedArtworksDTO.getArtworkId(), savedArtworksDTO.getApiOrigin());
         if(optionalArtwork.isEmpty()){
-            throw new RuntimeException("Artwork is empty");
+            throw new InvalidExhibitionException("Artwork is empty");
             //throw exception
         }
         Artwork artwork = optionalArtwork.get();
         if(!exhibition.getArtList().contains(artwork)){
-            throw new RuntimeException("Artwork not in exhibition");
-            //throw exception
+            throw new DuplicatedArtworkException("Artwork not in exhibition");
+            //Name is misleading, intent to throw conflict
         }
         exhibition.getArtList().remove(artwork);
         return exhibitionRepository.save(exhibition);
@@ -99,7 +103,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
         if(exhibitionRepository.existsById(exhibitionId)){
             exhibitionRepository.deleteById(exhibitionId);
         } else {
-            //throw exception
+            throw new InvalidExhibitionException("Exhibition does not exist");
         }
 
     }
@@ -117,8 +121,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
         if(optionalExhibition.isPresent()){
             return optionalExhibition.get();
         } else {
-            //throw exception
+            throw new InvalidExhibitionException("Exhibition does not exist");
         }
-        return null; //change this to exception throw
     }
 }

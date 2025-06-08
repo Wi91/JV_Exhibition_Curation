@@ -57,5 +57,9 @@ public class ExceptionControllerHandler {
 
             return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
+        @ExceptionHandler(DuplicatedArtworkException.class)
+        public ResponseEntity<Object> handleDuplicatedArtworkException(DuplicatedArtworkException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
     }
 }
