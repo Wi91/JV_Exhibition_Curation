@@ -21,7 +21,7 @@ public class ApiServiceImpl implements ApiService {
 
 
     private static final String CHICAGO_ARTWORK_ALL_ARTWORKS_URL = "https://api.artic.edu/api/v1/artworks?limit=10&page=";
-    private static final String CHICAGO_IMAGE_BASE_URL = "https://www.artic.edu/iiif/2";
+    private static final String CHICAGO_IMAGE_BASE_URL = "https://www.artic.edu/iiif/2/";
 
 
     @Override
