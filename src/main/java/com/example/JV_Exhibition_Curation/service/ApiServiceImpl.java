@@ -36,7 +36,7 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public List<Artwork> getArtworkSearchResult(String query, Integer page) {
-        ArrayList<Artwork> chicagoArtworks = getChicagoSearchArtwork(query, page);
+        ArrayList<Artwork> chicagoArtworks = getChicagoSearchArtwork(query.trim(), page);
         return chicagoArtworks;
     }
 
@@ -71,7 +71,8 @@ public class ApiServiceImpl implements ApiService {
 
 
     private ArrayList<Artwork> getChicagoSearchArtwork(String query, Integer page) {
-        String url = String.format("https://api.artic.edu/api/v1/artworks/search?q=%s&page=%d&limit=10", query, page);
+        query = query.replace(" ", "%20");
+        String url = "https://api.artic.edu/api/v1/artworks/search?limit=10&q=" + query + "&page=" + page;
         JsonNode results = sendGETRequest(url);
         JsonNode data = results.findPath("data");
         ArrayList<Artwork> searchResults = new ArrayList<>();
