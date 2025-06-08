@@ -78,7 +78,7 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
         Exhibition exhibition = exhibitionOptional.get();
         Optional<Artwork> optionalArtwork = artRepository.findByApiIdAndApiOrigin(savedArtworksDTO.getArtworkId(), savedArtworksDTO.getApiOrigin());
         if(optionalArtwork.isEmpty()){
-            throw new InvalidExhibitionException("Artwork is empty");
+            throw new InvalidExhibitionException("Artwork is not in database");
             //throw exception
         }
         Artwork artwork = optionalArtwork.get();

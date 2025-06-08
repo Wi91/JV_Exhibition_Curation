@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@RestControllerAdvice
 public class ExceptionControllerHandler {
 
-    @RestControllerAdvice
-    public class GlobalExceptionHandler {
+
         @ExceptionHandler(InvalidRequestException.class)
         public ResponseEntity<Object> handleInvalidRequestException(InvalidRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -62,4 +62,3 @@ public class ExceptionControllerHandler {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
-}

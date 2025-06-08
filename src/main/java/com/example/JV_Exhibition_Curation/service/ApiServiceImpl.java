@@ -1,6 +1,9 @@
 package com.example.JV_Exhibition_Curation.service;
 
 import com.example.JV_Exhibition_Curation.dto.SavedArtworksDTO;
+import com.example.JV_Exhibition_Curation.exception.APIPageOutOfBoundsException;
+import com.example.JV_Exhibition_Curation.exception.InvalidArtworkException;
+import com.example.JV_Exhibition_Curation.exception.UnknownAPIOriginException;
 import com.example.JV_Exhibition_Curation.model.Artwork;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,16 +39,35 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public List<Artwork> getArtworkSearchResult(String query, Integer page) {
-        ArrayList<Artwork> chicagoArtworks = getChicagoSearchArtwork(query.trim(), page);
-        return chicagoArtworks;
+        int errorCounter = 0;
+        ArrayList<Artwork> artworkArrayList = new ArrayList<>();
+        try {
+            ArrayList<Artwork> chicagoArtworks = getChicagoSearchArtwork(query.trim(), page);
+            if (!chicagoArtworks.isEmpty()){
+                artworkArrayList.addAll(chicagoArtworks);
+            }
+        } catch (APIPageOutOfBoundsException e) {
+            errorCounter ++;
+        }
+        if (errorCounter >= 1){
+            throw new APIPageOutOfBoundsException("No more pages");
+        }
+        return artworkArrayList;
     }
 
     @Override
     public Artwork getArtworkDetailsByApi(SavedArtworksDTO savedArtworksDTO) {
         Artwork artwork = new Artwork();
+        System.out.println(savedArtworksDTO.getApiOrigin());
+        System.out.println("START");
         switch (savedArtworksDTO.getApiOrigin()) {
             case "Chicago Institute":
+                System.out.println("CHICAGO");
                 artwork = getChicagoApiArtwork(savedArtworksDTO.getArtworkId());
+                break;
+            default:
+                System.out.println("NOTHING");
+                throw new UnknownAPIOriginException("Api origin unknown");
         }
         return artwork;
     }
@@ -53,6 +75,9 @@ public class ApiServiceImpl implements ApiService {
     private Artwork getChicagoApiArtwork(Long artworkId) {
         String url = "https://api.artic.edu/api/v1/artworks/" + artworkId;
         JsonNode results = sendGETRequest(url);
+        if (results.has("status")) {
+            throw new InvalidArtworkException("No artworks with Id " + artworkId);
+        }
 
         JsonNode data = results.findPath("data");
 
@@ -73,9 +98,19 @@ public class ApiServiceImpl implements ApiService {
     private ArrayList<Artwork> getChicagoSearchArtwork(String query, Integer page) {
         query = query.replace(" ", "%20");
         String url = "https://api.artic.edu/api/v1/artworks/search?limit=10&q=" + query + "&page=" + page;
-        JsonNode results = sendGETRequest(url);
-        JsonNode data = results.findPath("data");
         ArrayList<Artwork> searchResults = new ArrayList<>();
+        JsonNode results = sendGETRequest(url);
+        if (results.has("status")) {
+            return searchResults;
+        }
+        JsonNode data = results.findPath("data");
+//        int total = results.path("pagination").path("total").asInt();
+        int totalPages = results.path("pagination").path("total_pages").asInt();
+        System.out.println(totalPages);
+
+        if(page > totalPages) {
+            throw new APIPageOutOfBoundsException("Page is invalid");
+        }
 
         for(JsonNode node : data) {
 
