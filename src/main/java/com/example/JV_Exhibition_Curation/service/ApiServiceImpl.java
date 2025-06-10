@@ -88,7 +88,7 @@ public class ApiServiceImpl implements ApiService {
                 .altText(data.path("thumbnail").path("alt_text").asText("None Provided"))
                 .apiOrigin("Chicago Institute")
                 .artistName(data.path("artist_title").asText("Unknown"))
-                .description(data.path("description").asText("No Description Provided"))
+                .description(data.path("short_description").asText("No Description Provided"))
                 .imageUrl(CHICAGO_IMAGE_BASE_URL + data.path("image_id").asText("No Image") + "/full/843,/0/default.jpg")
                 .build();
     }
@@ -144,7 +144,7 @@ public class ApiServiceImpl implements ApiService {
                     .altText(node.path("thumbnail").path("alt_text").asText("None Provided"))
                     .apiOrigin("Chicago Institute")
                     .artistName(node.path("artist_title").asText("Unknown"))
-                    .description(node.path("description").asText("No Description Provided"))
+                    .description(node.path("short_description").asText("No Description Provided"))
                     .imageUrl(CHICAGO_IMAGE_BASE_URL + node.path("image_id").asText("No Image") + "/full/843,/0/default.jpg")
                     .build();
 
