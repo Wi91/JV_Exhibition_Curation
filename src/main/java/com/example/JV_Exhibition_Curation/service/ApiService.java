@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ApiService {
 
-    List<Artwork> getAllHomeArtworks(Integer page);
+    List<Artwork> getAllHomeArtworks(Integer page, String origin);
 
     List<Artwork> getArtworkSearchResult(String query, Integer page);
 

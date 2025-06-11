@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.Range;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -28,13 +29,61 @@ public class ApiServiceImpl implements ApiService {
 
 
     @Override
-    public List<Artwork> getAllHomeArtworks(Integer page) {
-
+    public List<Artwork> getAllHomeArtworks(Integer page, String origin) {
         ArrayList<Artwork> artworks = new ArrayList<>();
+        switch (origin) {
+            case "Chicago_Institute":
+                artworks = getAllHomeChicagoArtworks(page);
+                break;
+            case "Metropolitan_Museum":
+                artworks = getAllMetropolitanArtworks(page);
+                break;
+            default:
+                throw new UnknownAPIOriginException("API Origin " + origin + "is unknown");
+        }
         ArrayList<Artwork> artworksChicago = getAllHomeChicagoArtworks(page);
         List<Artwork> list = new ArrayList<>(artworksChicago);
 
-        return list;
+        return artworks;
+    }
+
+    private ArrayList<Artwork> getAllMetropolitanArtworks(Integer page) {
+        ArrayList<Artwork> metropolitanArtworks = new ArrayList<>();
+        int start = (page - 1) * 10 + 1;
+        int end = start + 10;
+
+        String metUrl = "https://collectionapi.metmuseum.org/public/collection/v1/search?q=s&hasImages=true";
+        String objectUrl = "https://collectionapi.metmuseum.org/public/collection/v1/objects/";
+
+        JsonNode metResults = sendGETRequest(metUrl);
+        System.out.println(metResults.asText());
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        for (int i = start; i <= end; i++) {
+            String artDetailsUrl = objectUrl + metResults.path("objectIDs").get(i).asText();
+            JsonNode detailResult = sendGETRequest(artDetailsUrl);
+            System.out.println(detailResult.asText());
+            if (detailResult.has("message")){
+                continue;
+            }
+            Artwork metArtwork = Artwork.builder()
+                    .apiId(metResults.path("objectIDs").get(i).asLong())
+                    .title(detailResult.path("title").asText("Unknown"))
+
+                    .artistName(detailResult.path("constituents") != null & detailResult.has("constituents") ?
+                            detailResult.path("constituents").path(0).path("name")
+                                    .asText("Unknown Artist"): "Unknown Artist")
+                    .description("No Description Provided")
+                    .imageUrl(detailResult.path("primaryImage").asText("No Image Provided"))
+                    .altText(detailResult.path("title").asText("Unknown"))
+                    .apiOrigin("Metropolitan_Museum")
+                    .build();
+
+            metropolitanArtworks.add(metArtwork);
+        }
+        return metropolitanArtworks;
     }
 
     @Override
@@ -43,13 +92,13 @@ public class ApiServiceImpl implements ApiService {
         ArrayList<Artwork> artworkArrayList = new ArrayList<>();
         try {
             ArrayList<Artwork> chicagoArtworks = getChicagoSearchArtwork(query.trim(), page);
-            if (!chicagoArtworks.isEmpty()){
+            if (!chicagoArtworks.isEmpty()) {
                 artworkArrayList.addAll(chicagoArtworks);
             }
         } catch (APIPageOutOfBoundsException e) {
-            errorCounter ++;
+            errorCounter++;
         }
-        if (errorCounter >= 1){
+        if (errorCounter >= 1) {
             throw new APIPageOutOfBoundsException("No more pages");
         }
         return artworkArrayList;
@@ -65,6 +114,8 @@ public class ApiServiceImpl implements ApiService {
                 System.out.println("CHICAGO");
                 artwork = getChicagoApiArtwork(savedArtworksDTO.getArtworkId());
                 break;
+            case "Metropolitan_Museum":
+                //Add something here
             default:
                 System.out.println("NOTHING");
                 throw new UnknownAPIOriginException("Api origin unknown");
@@ -94,7 +145,6 @@ public class ApiServiceImpl implements ApiService {
     }
 
 
-
     private ArrayList<Artwork> getChicagoSearchArtwork(String query, Integer page) {
         query = query.replace(" ", "%20");
         String url = "https://api.artic.edu/api/v1/artworks/search?limit=10&q=" + query + "&page=" + page;
@@ -106,20 +156,19 @@ public class ApiServiceImpl implements ApiService {
         JsonNode data = results.findPath("data");
 //        int total = results.path("pagination").path("total").asInt();
         int totalPages = results.path("pagination").path("total_pages").asInt();
-        System.out.println(totalPages);
 
-        if(page > totalPages) {
+        if (page > totalPages) {
             throw new APIPageOutOfBoundsException("Page is invalid");
         }
 
-        for(JsonNode node : data) {
-
-
-            Artwork art = Artwork.builder()
-                    .id(0L)
-                    .apiId(node.path("id").asLong(0))
-                    .title(node.path("title").asText("Unknown"))
-                    .build();
+        for (JsonNode node : data) {
+            long id;
+            if (node.has("id")) {
+                id = node.path("id").asLong();
+            } else {
+                continue;
+            }
+            Artwork art = getChicagoApiArtwork(id);
 
             searchResults.add(art);
         }
@@ -134,7 +183,7 @@ public class ApiServiceImpl implements ApiService {
         JsonNode results = sendGETRequest(url);
 
         JsonNode data = results.findPath("data");
-        for(JsonNode node : data) {
+        for (JsonNode node : data) {
 
 
             Artwork art = Artwork.builder()
@@ -165,8 +214,11 @@ public class ApiServiceImpl implements ApiService {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-           HttpResponse<String> response = client.send(chiSearchRequest, HttpResponse.BodyHandlers.ofString());
-           return mapper.readTree(response.body());
+            HttpResponse<String> response = client.send(chiSearchRequest, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response.statusCode());
+            System.out.println("GOT SENTTTTTTTTTTTT");
+            System.out.println(response.body());
+            return mapper.readTree(response.body());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

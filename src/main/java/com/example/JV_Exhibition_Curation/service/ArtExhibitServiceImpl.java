@@ -28,11 +28,12 @@ public class ArtExhibitServiceImpl implements ArtExhibitService{
     ArtRepository artRepository;
 
     @Override
-    public List<Artwork> getAllHomeArtworks(Integer page) {
+    public List<Artwork> getAllHomeArtworks(Integer page, String origin) {
         if(page == null || page < 1){
           throw new APIPageOutOfBoundsException("Page must be greater or equal to 1");
         }
-        return apiService.getAllHomeArtworks(page);
+        return apiService.getAllHomeArtworks(page, origin);
+
     }
 
     @Override

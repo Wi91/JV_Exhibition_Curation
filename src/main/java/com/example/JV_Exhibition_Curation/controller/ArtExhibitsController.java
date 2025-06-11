@@ -20,8 +20,8 @@ public class ArtExhibitsController {
     ArtExhibitService artExhibitService;
 
     @GetMapping("/artwork/home")
-    public ResponseEntity<List<Artwork>> getAllHomeArtworks(@RequestParam Integer page){
-        return new ResponseEntity<>(artExhibitService.getAllHomeArtworks(page), HttpStatus.OK);
+    public ResponseEntity<List<Artwork>> getAllHomeArtworks(@RequestParam Integer page, @RequestParam String origin){
+        return new ResponseEntity<>(artExhibitService.getAllHomeArtworks(page, origin), HttpStatus.OK);
     }
 
     //Search All Artworks

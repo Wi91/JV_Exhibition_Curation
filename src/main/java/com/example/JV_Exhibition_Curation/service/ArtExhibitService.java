@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatusCode;
 import java.util.List;
 
 public interface ArtExhibitService {
-    List<Artwork> getAllHomeArtworks(Integer page);
+    List<Artwork> getAllHomeArtworks(Integer page, String origin);
 
 
     List<Artwork> getSearchResults(String query, Integer page);
