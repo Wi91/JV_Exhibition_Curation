@@ -115,7 +115,8 @@ public class ApiServiceImpl implements ApiService {
                 artwork = getChicagoApiArtwork(savedArtworksDTO.getArtworkId());
                 break;
             case "Metropolitan_Museum":
-                //Add something here
+                artwork = getMetropolitanApiArtwork(savedArtworksDTO.getArtworkId());
+                break;
             default:
                 System.out.println("NOTHING");
                 throw new UnknownAPIOriginException("Api origin unknown");
@@ -142,6 +143,29 @@ public class ApiServiceImpl implements ApiService {
                 .description(data.path("short_description").asText("No Description Provided"))
                 .imageUrl(CHICAGO_IMAGE_BASE_URL + data.path("image_id").asText("No Image") + "/full/843,/0/default.jpg")
                 .build();
+    }
+
+    private Artwork getMetropolitanApiArtwork(Long metArtworkId) {
+        String url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + metArtworkId;
+        JsonNode metResults = sendGETRequest(url);
+        if (metResults.has("message")) {
+            throw new InvalidArtworkException("No artworks with Id " + metArtworkId);
+        }
+
+        Artwork metArtwork = Artwork.builder()
+                .apiId(metResults.path("objectID").asLong())
+                .title(metResults.path("title").asText("Unknown"))
+
+                .artistName(metResults.path("constituents") != null & metResults.has("constituents") ?
+                        metResults.path("constituents").path(0).path("name")
+                                .asText("Unknown Artist"): "Unknown Artist")
+                .description("No Description Provided")
+                .imageUrl(metResults.path("primaryImage").asText("No Image Provided"))
+                .altText(metResults.path("title").asText("Unknown"))
+                .apiOrigin("Metropolitan_Museum")
+                .build();
+
+        return metArtwork;
     }
 
 
