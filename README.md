@@ -241,7 +241,7 @@ Ensure that Java Development Kit (JDK) version 21 is installed and available in 
    mvn clean install
    ```
    
-4. **Configure Application Properties
+4. **Configure Application Properties**
 
 Create or edit the ```application.properties``` file in ```src/main/resources/``` and provide necessary configurations:
 
